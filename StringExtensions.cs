@@ -3,7 +3,6 @@ using EsotericDevZone.RuleBasedParser.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Remoting.Metadata.W3cXsd2001;
 using System.Text;
 using System.Text.RegularExpressions;
 using static EsotericDevZone.RuleBasedParser.Helpers.CommentsStyleHelper;
@@ -11,7 +10,7 @@ using static EsotericDevZone.RuleBasedParser.Helpers.TokenSplitHelper;
 
 namespace EsotericDevZone.RuleBasedParser
 {
-    public static class StringExtensions
+    internal static class StringExtensions
     {
         private static readonly Dictionary<char, string> CharsToEscape = new Dictionary<char, string>
         {
@@ -88,7 +87,7 @@ namespace EsotericDevZone.RuleBasedParser
 
         public static IEnumerable<Token> FindComments(this string input, CommentStyle commentsStyle)
         {
-            Console.WriteLine(GetBlockCommentsRegex(commentsStyle.BlockComments));
+            //Console.WriteLine(GetBlockCommentsRegex(commentsStyle.BlockComments));
             var blocks = Regex
                 .Matches(input, GetBlockCommentsRegex(commentsStyle.BlockComments), RegexOptions.Singleline).Cast<Match>();
             var inlines = Regex
@@ -171,7 +170,8 @@ namespace EsotericDevZone.RuleBasedParser
         public static List<Token> SplitToTokens(this string input, TokensSplitOptions options, CommentStyle commentsStyle)
         {
             var splitBreakingRegex = GetSplitBreakingRegex(options.SplitBreakingRules);           
-            Console.WriteLine(splitBreakingRegex);
+            //Console.WriteLine(splitBreakingRegex);
+            //Console.WriteLine(options.Atoms.GetAtomsSplitRegex());
 
             return input.RemoveComments(commentsStyle, options)
                 // izolate "strings" from the rest
@@ -190,32 +190,45 @@ namespace EsotericDevZone.RuleBasedParser
                 // split by atoms
                 .Select(token =>
                 {
+                    if (options.Atoms.GetAtomsSplitRegex() == "")
+                        return Collections.ListOf(token);
                     return token.Value.IsSplitBreakingString(options.SplitBreakingRules)
                         ? Collections.ListOf(token)
                         : token.Value.RemoveRedundantWhitespace()
                             .Select(m => new Token(m.Value, m.Index + token.Index))
                             .Select(tk => Regex.Split(tk.Value, options.Atoms.GetAtomsSplitRegex())
-                                
-                                .ToTokens(tk.Index)).Flatten();                                                              
+
+                                .ToTokens(tk.Index)).Flatten();
                 }).Flatten()
                 // finish
                 .Where(token => !string.IsNullOrWhiteSpace(token.Value))
-                .ToList();
+                .ToList()
+                .FixTokensPositions(input);                
+        }
 
-            /*Console.WriteLine(TokenSplitHelper.GetSplitBreakingRegex(options.SplitBreakingRules));
-            Console.WriteLine(options.Atoms.GetAtomsSplitRegex());
-            return Regex.Matches(input.RemoveComments(commentsStyle), TokenSplitHelper.GetSplitBreakingRegex(options.SplitBreakingRules))
-                .Cast<Match>()
-                .Select(m => m.Value)
-                .Select(s =>
-                 {
-                     return s.IsSplitBreakingString(options.SplitBreakingRules)
-                            ? new List<string> { s }
-                            : Regex.Split(s.RemoveRedundantWhitespace(), options.Atoms.GetAtomsSplitRegex()).ToList();
-                 })
-                 .SelectMany(x => x)
-                .Where(s => !string.IsNullOrWhiteSpace(s))
-                .ToList();*/
-        }        
+        private static List<Token> FixTokensPositions(this List<Token> tokens, string input)
+        {
+            if (tokens.Count() == 0) return Collections.EmptyList<Token>();
+
+            var lines = input.Split('\n');
+            int lineIndex = 0;
+            int lineStartPos = 0;
+
+            foreach(var tk in tokens)
+            {
+                while (tk.Index >= lineStartPos + lines[lineIndex].Length)
+                {
+                    lineStartPos += lines[lineIndex].Length + 1;
+                    lineIndex++;
+                }
+
+                if(lineStartPos<=tk.Index && tk.Index + tk.Length <= lineStartPos + lines[lineIndex].Length)
+                {
+                    tk.Line = lineIndex + 1;
+                    tk.Column = tk.Index - lineStartPos + 1;
+                }
+            }
+            return tokens;
+        }
     }
 }

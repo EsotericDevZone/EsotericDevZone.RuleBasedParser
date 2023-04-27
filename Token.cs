@@ -17,6 +17,9 @@ namespace EsotericDevZone.RuleBasedParser
 
         public bool IncludesIndex(int index) => index.IsBetween(Index, Index + Length - 1);
 
-        public override string ToString() => $"Token \"{Value}\" at index {Index}";
+        public override string ToString() => $"Token \"{Value}\" at index {Index} = {Line}:{Column}";
+
+        public int Line { get; internal set; }
+        public int Column { get; internal set; }
     }
 }

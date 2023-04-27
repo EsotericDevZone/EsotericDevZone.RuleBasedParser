@@ -7,13 +7,13 @@ namespace EsotericDevZone.RuleBasedParser
     class ParseRecord : IParseRulePatternItemMatch
     {
         public string RuleKey { get; }
-        public ParseResult Value { get; }
+        public ParseResult Result { get; }
         public int Position { get; }
         public int TokensCount { get; }
         public ParseRecord(string ruleKey, ParseResult value, int position, int tokensCount)
         {
             RuleKey = ruleKey;
-            Value = value;
+            Result = value;
             Position = position;
             TokensCount = tokensCount;
         }

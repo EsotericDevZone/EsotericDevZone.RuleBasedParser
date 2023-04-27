@@ -4,6 +4,6 @@ namespace EsotericDevZone.RuleBasedParser.ParseRulePatterns
 {
     internal interface IParseRulePatternItem
     {        
-        IParseRulePatternItemMatch Match(RuleBasedParser parser, List<Token> tokens, int position);
+        IParseRulePatternItemMatch Match(Parser parser, List<Token> tokens, int position);
     }
 }

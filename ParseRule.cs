@@ -11,7 +11,7 @@ namespace EsotericDevZone.RuleBasedParser
 
         public Func<ParseResult[], Token[], ParseResult> BuildMethod;
 
-        public ParseRule(RuleBasedParser parser, string key, string[] parsePattern, Func<ParseResult[], Token[], ParseResult> buildMethod)
+        public ParseRule(Parser parser, string key, string[] parsePattern, Func<ParseResult[], Token[], ParseResult> buildMethod)
         {
             Key = key;
             ParsePattern = parsePattern.Select(item => ParseRulePatternItems.FromString(parser, item)).ToArray();

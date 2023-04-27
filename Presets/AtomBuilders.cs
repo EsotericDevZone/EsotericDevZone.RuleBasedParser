@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text.RegularExpressions;
 
-namespace EsotericDevZone.RuleBasedParser
+namespace EsotericDevZone.RuleBasedParser.Presets
 {
     public static class AtomBuilders
     {
@@ -13,7 +13,7 @@ namespace EsotericDevZone.RuleBasedParser
             {
                 return Real(input);
             }
-            catch(Exception)
+            catch (Exception)
             {
                 return Integer(input);
             }
@@ -23,12 +23,12 @@ namespace EsotericDevZone.RuleBasedParser
         {
             if (input.Length < 2)
                 throw new ParseException("Invalid string");
-            if (!(input.StartsWith(startDelimiter.ToString()) && input.EndsWith(endDelimiter.ToString()))) 
+            if (!(input.StartsWith(startDelimiter.ToString()) && input.EndsWith(endDelimiter.ToString())))
                 throw new ParseException("Invalid string");
             return input.Substring(1, input.Length - 2).FromLiteral();
         }
 
-        public static object DoubleQuotedString(string input)=> GenericString(input, '"', '"');
+        public static object DoubleQuotedString(string input) => GenericString(input, '"', '"');
         public static object SingleQuotedString(string input) => GenericString(input, '\'', '\'');
 
         public static object Symbol(string input)

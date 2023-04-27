@@ -9,8 +9,13 @@ namespace EsotericDevZone.RuleBasedParser.ParseRulePatterns
 {
     internal static class ParseRulePatternItems
     {
-        public static IParseRulePatternItem FromString(RuleBasedParser parser, string item)
+        public static IParseRulePatternItem FromString(Parser parser, string item)
         {
+            if(item=="??")
+            {
+                return new RepeatableTailItem();
+            }
+            item = item.Replace(@"\?", "?");
             if(item.ConstainsUnescapedVerticalLine())
             {
                 var wildcards = Regex.Split(item, UnescapedVerticalLineRegex);
@@ -24,8 +29,7 @@ namespace EsotericDevZone.RuleBasedParser.ParseRulePatterns
             {
                 return new AtomPatternItem(item);
             }
-
-            return null;
+            return new LiteralPatternItem(item);            
         }
 
         private static bool ConstainsUnescapedVerticalLine(this string str)

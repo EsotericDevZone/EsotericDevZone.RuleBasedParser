@@ -6,10 +6,22 @@ using System.Threading.Tasks;
 
 namespace EsotericDevZone.RuleBasedParser
 {
-    internal class ParseException : Exception
+    public class ParseException : Exception
     {
+        public Token ReferencedToken { get;  } = null;
+
         public ParseException() : base() { }
         public ParseException(string message) : base(message) { }
-        public ParseException(Exception exception) : base("Parse error", exception) { }
+        public ParseException(Token token, string message) : base(message) { ReferencedToken = token; }
+        public ParseException(Exception exception) : base(exception.Message, exception) { }
+        public ParseException(ParseException exception) : this(exception.ReferencedToken, exception.Message) { }
+
+        public override string ToString()
+        {
+            if (ReferencedToken == null) 
+                return $"Parse error: {Message}";
+            else
+                return $"{ReferencedToken.Line}:{ReferencedToken.Column} Parse error: {Message}";
+        } 
     }
 }

@@ -8,9 +8,9 @@ namespace EsotericDevZone.RuleBasedParser
 {
     public class ParseRulesCollection
     {
-        private RuleBasedParser Parser;
+        private Parser Parser;
 
-        public ParseRulesCollection(RuleBasedParser parser)
+        public ParseRulesCollection(Parser parser)
         {
             Parser = parser;
         }
@@ -43,7 +43,7 @@ namespace EsotericDevZone.RuleBasedParser
                 return new ParseResult(results[0].GeneratorToken, buildMethod(argT));
             });
 
-        public void RegisterRule<T, R>(string key, string rule, Func<T, R> buildMethod, int generatorTokenId)
+        public void RegisterRuleValueBuild<T, R>(string key, string rule, Func<T, R> buildMethod, int generatorTokenId)
             => RegisterRule(key, rule, (results, tokens) =>
             {
                 if (!(results[0].Value is T argT))
@@ -51,7 +51,7 @@ namespace EsotericDevZone.RuleBasedParser
                 return new ParseResult(tokens[generatorTokenId], buildMethod(argT));
             });
 
-        public void RegisterRule<T1,T2, R>(string key, string rule, Func<T1, T2, R> buildMethod, int generatorTokenId)
+        public void RegisterRuleValueBuild<T1,T2, R>(string key, string rule, Func<T1, T2, R> buildMethod, int generatorTokenId)
             => RegisterRule(key, rule, (results, tokens) =>
             {
                 if (!(results[0].Value is T1 argT1))
@@ -61,7 +61,7 @@ namespace EsotericDevZone.RuleBasedParser
                 return new ParseResult(tokens[generatorTokenId], buildMethod(argT1, argT2));
             });
 
-        public void RegisterRule<T1, T2, R>(string key, string rule, Func<T1, T2, R> buildMethod)
+        public void RegisterRuleValueBuild<T1, T2, R>(string key, string rule, Func<T1, T2, R> buildMethod)
             => RegisterRule(key, rule, (results, tokens) =>
             {
                 if (!(results[0].Value is T1 argT1))

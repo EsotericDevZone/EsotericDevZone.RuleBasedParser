@@ -7,9 +7,10 @@ namespace EsotericDevZone.RuleBasedParser
 
         public int TokensCount { get; } = 1;
 
-        public IgnoreMatch(int position)
+        public IgnoreMatch(int position, int tokensCount=1)
         {
             Position = position;
+            TokensCount = tokensCount;
         }
     }
 }

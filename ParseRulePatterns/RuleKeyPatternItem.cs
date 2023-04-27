@@ -10,17 +10,28 @@ namespace EsotericDevZone.RuleBasedParser.ParseRulePatterns
     {
         public string RuleKey { get; }
 
-        public IParseRulePatternItemMatch Match(RuleBasedParser parser, List<Token> tokens, int position)
+        public IParseRulePatternItemMatch Match(Parser parser, List<Token> tokens, int position)
         {
-            var rec = parser.LookFor(RuleKey, tokens, position);
-            if (rec == null)
-                throw new ParseException("Parse failed");
-            return rec;
+            try
+            {
+                var rec = parser.LookFor(RuleKey, tokens, position);
+                return rec;
+            }
+            catch(ParseException e)
+            {
+                throw new ParseException((ParseException)e);
+            }
+            catch (Exception e)
+            {
+                throw new ParseException(tokens[position], e.Message);
+            }
         }
 
         public RuleKeyPatternItem(string ruleKey)
         {
             RuleKey = ruleKey;
         }
+
+        public override string ToString() => RuleKey;        
     }
 }
