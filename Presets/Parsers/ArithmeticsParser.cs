@@ -14,8 +14,8 @@ namespace EsotericDevZone.RuleBasedParser.Presets.Parsers
         public ArithmeticsParser(Func<string, object> numberBuilder) : base()
         {
             this.TokensSplitOptions = new TokensSplitOptions(
-                Collections.EmptyList<string>(),
-                Collections.ListOf(@"\+", @"\-", @"\*", @"\/", @"\(", @"\)")
+                Lists.Empty<string>(),
+                Lists.Of(@"\+", @"\-", @"\*", @"\/", @"\(", @"\)")
                 );
             base.CommentStyle = CommentStyles.NoCommentsStyle;
             NumberBuilder = numberBuilder;

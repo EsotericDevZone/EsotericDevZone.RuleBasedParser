@@ -17,6 +17,8 @@ namespace EsotericDevZone.RuleBasedParser
 
         private List<ParseRule> ParseRules = new List<ParseRule>();
 
+        public List<(string Key, string Pattern)> Rules => ParseRules.Select(r => (r.Key, string.Join(" ", r.ParsePattern.ToList()))).ToList();
+
         internal IEnumerable<ParseRule> GetRulesByKey(string ruleKey)
             => ParseRules.Where(r => r.Key == ruleKey);
 

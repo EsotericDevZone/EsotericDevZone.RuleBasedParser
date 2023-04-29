@@ -2,7 +2,9 @@
 using EsotericDevZone.RuleBasedParser.Presets;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Web;
 
 namespace EsotericDevZone.RuleBasedParser
 {
@@ -32,13 +34,13 @@ namespace EsotericDevZone.RuleBasedParser
             try
             {
                 var tokens = input.SplitToTokens(TokensSplitOptions, CommentStyle);
+                tokens.ForEach(_ => Debug.WriteLine(_));
 
                 if(tokens.Count==0)
                 {
                     throw new NoTokensProvidedException("No tokens provided");
                 }
-
-                //tokens.ForEach(Console.WriteLine);
+                
                 var result = LookFor(RootRuleKey, tokens, 0);
                 if(result!=null)
                 {                 
@@ -59,7 +61,7 @@ namespace EsotericDevZone.RuleBasedParser
 
         private ParseRecord LookFor(ParseRule rule, List<Token> tokens, int pos)
         {
-            //Console.WriteLine($"{pos,5}. Looking for {rule}");
+            Debug.WriteLine($"{pos,5}. Looking for {rule}");
 
             var pattern = rule.ParsePattern;
 
@@ -71,70 +73,71 @@ namespace EsotericDevZone.RuleBasedParser
             
 
             Exception raisedException = null;
+            
+            int originalPos = pos;            
 
-            int tailReturn = -1;
-            int originalPos = pos;
-            int i = 0;
-            for (i = 0; i < pattern.Length; i++) 
+            var mandatoryPattern = pattern.TakeWhile(_ => !(_ is RepeatableTailItem)).ToArray();
+            var optionalPattern = pattern.SkipWhile(_ => !(_ is RepeatableTailItem)).ToArray().Skip(1).ToArray();
+
+            Debug.WriteLine($"Mandatory = {string.Join(" ",mandatoryPattern.ToList())}");
+            Debug.WriteLine($"Optional = {string.Join(" ", optionalPattern.ToList())}");
+
+            void dealWithPatternItem(IParseRulePatternItem item)
             {
-                var item = pattern[i];                
-
-                if (item is RepeatableTailItem) 
+                if (pos >= tokens.Count)
                 {
-                    tailReturn = i;
-
-                    finalRecords = records.ToList();
-                    finalSelectorMatches = selectorsMatches.ToList();                    
-                    continue;
-                }                
-                
-                try
-                {
-                    if (pos >= tokens.Count)
-                    {
-                        throw new ParseException(tokens.Last(), "Insufficient tokens");
-                    }
-
-                    var match = item.Match(this, tokens, pos);
-                    //Console.WriteLine(match);
-
-                    if (match is WildcardMatch wildcardMatch)
-                    {
-                        selectorsMatches.Add(wildcardMatch.Value);
-                    }
-                    else if (match is ParseRecord record)
-                    {
-                        records.Add(record);
-                        AddToCache(record);
-                    }
-                    else if (match is IgnoreMatch)
-                    {
-                    }
-                    else throw new NotImplementedException("Invalid match");
-
-                    pos += match.TokensCount;
-                }
-                catch (ParseException ex)
-                {
-                    raisedException = ex;                    
-                    break;
+                    throw new ParseException(tokens.Last(), "Insufficient tokens");
                 }
 
-                if(i==pattern.Length-1)
+                var match = item.Match(this, tokens, pos);                
+
+                if (match is WildcardMatch wildcardMatch)
                 {
-                    finalRecords = records.ToList();
-                    finalSelectorMatches = selectorsMatches.ToList();
-                    if (tailReturn >= 0)
-                    {                                                                   
-                        i = tailReturn;
-                        raisedException = null;
-                    }                    
-                }                
+                    selectorsMatches.Add(wildcardMatch.Value);
+                }
+                else if (match is ParseRecord record)
+                {
+                    records.Add(record);
+                    AddToCache(record);
+                }
+                else if (match is IgnoreMatch)
+                {
+                }
+                else throw new NotImplementedException("Invalid match");
+
+                pos += match.TokensCount;
             }
 
-            if (finalRecords == null || (raisedException != null && i != tailReturn + 1)) 
+            try
             {
-                throw raisedException;           
+                foreach (var item in mandatoryPattern)
+                    dealWithPatternItem(item);
+            }
+            catch (ParseException e) { raisedException = e; }
+
+            if (raisedException != null) throw raisedException;
+            finalRecords = records.ToList();
+            finalSelectorMatches = selectorsMatches.ToList();
+
+            int posBackup = pos;
+            if (optionalPattern.Length>0 && pos < tokens.Count)
+            {                
+                while(raisedException==null)
+                {
+                    posBackup = pos;
+                    try
+                    {
+                        foreach (var item in optionalPattern)
+                            dealWithPatternItem(item);
+                        finalRecords = records.ToList();
+                        finalSelectorMatches = selectorsMatches.ToList();
+                    }
+                    catch (ParseException e) 
+                    { 
+                        raisedException = e;                        
+                    }
+                }
+                pos = posBackup;
             }
             
             var value = rule.BuildMethod(
@@ -161,6 +164,8 @@ namespace EsotericDevZone.RuleBasedParser
                     if (rec != null)
                     {                        
                         AddToCache(rec);
+
+                        //Debug.WriteLine($"Found: {rec.Result.Value}, {rec.Position}:{rec.TokensCount}");
                         return rec;
                     }
                 }
@@ -182,7 +187,7 @@ namespace EsotericDevZone.RuleBasedParser
             if(raisedException!=null)
                 throw new ParseException(raisedException);
             //throw new ParseException("Parse failed");            
-
+           
             return null;
         }
 

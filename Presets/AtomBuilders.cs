@@ -33,9 +33,9 @@ namespace EsotericDevZone.RuleBasedParser.Presets
 
         public static object Symbol(string input)
         {
-            if (!Regex.IsMatch(input, @"^[_A-Za-z][_A-Aa-z0-9]*$"))
+            if (!Regex.IsMatch(input, @"^[_A-Za-z][_A-Za-z0-9]*$"))
                 throw new ParseException("Invalid symbol");
             return input;
-        }
+        }        
     }
 }

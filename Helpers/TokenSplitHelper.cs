@@ -37,7 +37,7 @@ namespace EsotericDevZone.RuleBasedParser.Helpers
             var splitChars = splitBreakingCharacters.SelectMany(s => s).Select(c => Regex.Escape(c.ToString()));
 
             return string.Join("|", splitBreakingCharacters.Select(BuildSplitBreakingRegex)
-                .Concat(Collections.ListOf(
+                .Concat(Lists.Of(
                     // tokens that don't contain any delimiters
                     "[^"
                     + string.Join("", splitChars)

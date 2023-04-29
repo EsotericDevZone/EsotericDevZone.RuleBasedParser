@@ -6,26 +6,26 @@ namespace EsotericDevZone.RuleBasedParser.Presets
     {
         public static readonly CommentStyle NoCommentsStyle = new CommentStyle
             (
-                Collections.EmptyList<string>(),
-                Collections.EmptyList<(string, string)>()
+                Lists.Empty<string>(),
+                Lists.Empty<(string, string)>()
             );
 
         public static readonly CommentStyle CStyle = new CommentStyle
             (
-                Collections.ListOf("//"),
-                Collections.ListOf(("/*", "*/"))
+                Lists.Of("//"),
+                Lists.Of(("/*", "*/"))
             );
 
         public static readonly CommentStyle PascalStyle = new CommentStyle
             (
-                Collections.ListOf("//"),
-                Collections.ListOf(("/*", "*/"), ("(*", "*)"))
+                Lists.Of("//"),
+                Lists.Of(("/*", "*/"), ("(*", "*)"))
             );
 
         public static readonly CommentStyle PythonStyle = new CommentStyle
             (
-                Collections.ListOf("#"),
-                Collections.ListOf(("\"\"\"", "\"\"\""))
+                Lists.Of("#"),
+                Lists.Of(("\"\"\"", "\"\"\""))
             );
     }
 }

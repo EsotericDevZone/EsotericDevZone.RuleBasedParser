@@ -86,11 +86,10 @@ namespace EsotericDevZone.RuleBasedParser
         }
 
         public static IEnumerable<Token> FindComments(this string input, CommentStyle commentsStyle)
-        {
-            //Console.WriteLine(GetBlockCommentsRegex(commentsStyle.BlockComments));
-            var blocks = Regex
+        {            
+            var blocks = commentsStyle.BlockComments.Length==0 ? Lists.Empty<Match>() : Regex
                 .Matches(input, GetBlockCommentsRegex(commentsStyle.BlockComments), RegexOptions.Singleline).Cast<Match>();
-            var inlines = Regex
+            var inlines = commentsStyle.InlineComments.Length == 0 ? Lists.Empty<Match>() : Regex
                 .Matches(input, GetInlineCommentsRegex(commentsStyle.InlineComments), RegexOptions.Multiline).Cast<Match>();
             return blocks.Concat(inlines)
                 .Select(m => new Token(m.Value, m.Index));
@@ -105,7 +104,6 @@ namespace EsotericDevZone.RuleBasedParser
         public static List<Token> RemoveComments(this string input, CommentStyle commentStyle, TokensSplitOptions tokensSplitOptions)
         {
             var _comments = input.FindComments(commentStyle);            
-
             var _strings = input.FindUnsplittableStrings(tokensSplitOptions);
 
             // remove strings completely included in comments
@@ -122,8 +120,8 @@ namespace EsotericDevZone.RuleBasedParser
                 .OrderBy(c => c.Index)
                 .ToArray();
 
-            comments = Collections.ListOf(new Token("", 0)).Concat(comments)
-                .Concat(Collections.ListOf(new Token("", input.Length))).ToArray();
+            comments = Lists.Of(new Token("", 0)).Concat(comments)
+                .Concat(Lists.Of(new Token("", input.Length))).ToArray();
 
 
 
@@ -171,10 +169,10 @@ namespace EsotericDevZone.RuleBasedParser
         {
             var splitBreakingRegex = GetSplitBreakingRegex(options.SplitBreakingRules);           
             //Console.WriteLine(splitBreakingRegex);
-            //Console.WriteLine(options.Atoms.GetAtomsSplitRegex());
+            //Console.WriteLine(options.Atoms.GetAtomsSplitRegex());            
 
             return input.RemoveComments(commentsStyle, options)
-                // izolate "strings" from the rest
+                // isolate "strings" from the rest
                 .Select(token =>
                     Regex.Matches(token.Value, splitBreakingRegex).Cast<Match>()
                         .Select(m => new Token(m.Value, token.Index + m.Index))
@@ -183,7 +181,7 @@ namespace EsotericDevZone.RuleBasedParser
                 .Select(token =>
                 {
                     return token.Value.IsSplitBreakingString(options.SplitBreakingRules)
-                        ? Collections.ListOf(token)
+                        ? Lists.Of(token)
                         : token.Value.RemoveRedundantWhitespace()
                             .Select(m => new Token(m.Value, token.Index + m.Index));
                 }).Flatten()
@@ -191,9 +189,9 @@ namespace EsotericDevZone.RuleBasedParser
                 .Select(token =>
                 {
                     if (options.Atoms.GetAtomsSplitRegex() == "")
-                        return Collections.ListOf(token);
+                        return Lists.Of(token);
                     return token.Value.IsSplitBreakingString(options.SplitBreakingRules)
-                        ? Collections.ListOf(token)
+                        ? Lists.Of(token)
                         : token.Value.RemoveRedundantWhitespace()
                             .Select(m => new Token(m.Value, m.Index + token.Index))
                             .Select(tk => Regex.Split(tk.Value, options.Atoms.GetAtomsSplitRegex())
@@ -208,7 +206,7 @@ namespace EsotericDevZone.RuleBasedParser
 
         private static List<Token> FixTokensPositions(this List<Token> tokens, string input)
         {
-            if (tokens.Count() == 0) return Collections.EmptyList<Token>();
+            if (tokens.Count() == 0) return Lists.Empty<Token>();
 
             var lines = input.Split('\n');
             int lineIndex = 0;

@@ -31,6 +31,6 @@ namespace EsotericDevZone.RuleBasedParser
             Atoms = atoms.ToArray();
         }
 
-        public TokensSplitOptions() : this(Collections.EmptyList<string>(), Collections.EmptyList<string>()) { }
+        public TokensSplitOptions() : this(Lists.Empty<string>(), Lists.Empty<string>()) { }
     }
 }

@@ -1,4 +1,4 @@
-﻿using EsotericDevZone.Core.Extensions;
+﻿using EsotericDevZone.Core;
 
 namespace EsotericDevZone.RuleBasedParser
 { 

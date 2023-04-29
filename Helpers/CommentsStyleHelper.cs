@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace EsotericDevZone.RuleBasedParser.Helpers
@@ -11,7 +12,7 @@ namespace EsotericDevZone.RuleBasedParser.Helpers
         }
 
         internal static string GetBlockCommentsRegex((string Begin, string End)[] styles)
-        {
+        {            
             return string.Join("|", styles.Select(s => $"({EscapeChars(s.Begin)}.*?{EscapeChars(s.End)})"));
         }
 
