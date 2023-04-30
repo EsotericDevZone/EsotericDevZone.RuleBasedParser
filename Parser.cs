@@ -7,6 +7,9 @@ using System.Linq;
 
 namespace EsotericDevZone.RuleBasedParser
 {
+    /// <summary>
+    /// Rule based parser tool
+    /// </summary>
     public class Parser
     {
         public string RootRuleKey { get; set; }
@@ -27,6 +30,15 @@ namespace EsotericDevZone.RuleBasedParser
             CommentStyle = commentStyle;
         }
 
+        /// <summary>
+        /// Builder function to call when no tokens are provided (default: throws NoTokensProvidedException)
+        /// </summary>
+        public Func<ParseResult> EmptyBodyResult { get; set; } = () => throw new NoTokensProvidedException("No tokens provided");
+        
+        /// <summary>
+        /// Parses an input sequence and returns the evaluated value according to the parsing rules
+        /// </summary>        
+        /// <exception cref="ParseException">A parse exception is thrown when a syntax error is encountered</exception>
         public object Parse(string input)
         {
             ParseCache.Clear();            
@@ -34,7 +46,7 @@ namespace EsotericDevZone.RuleBasedParser
 
             if(tokens.Count==0)
             {
-                throw new NoTokensProvidedException("No tokens provided");
+                return EmptyBodyResult();                
             }
 
             var result = LookFor(RootRuleKey, tokens, 0);
@@ -52,6 +64,16 @@ namespace EsotericDevZone.RuleBasedParser
                 throw new ParseException(tokens.Last(), "Insuficient tokens");
             }
             return result.Result.Value;                   
+        }
+
+        public T Parse<T>(string input)
+        {
+            var result = Parse(input);
+
+            if (!(result is T))
+                throw new InvalidCastException();
+
+            return (T)result;
         }
 
         private ParseRecord LookFor(ParseRule rule, List<Token> tokens, int pos)

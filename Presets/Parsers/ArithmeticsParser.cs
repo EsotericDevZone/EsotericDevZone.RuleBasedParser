@@ -16,7 +16,7 @@ namespace EsotericDevZone.RuleBasedParser.Presets.Parsers
             this.TokensSplitOptions = new TokensSplitOptions(
                 Lists.Empty<string>(),
                 Lists.Of(@"\+", @"\-", @"\*", @"\/", @"\(", @"\)")
-                );
+                );  
             base.CommentStyle = CommentStyles.NoCommentsStyle;
             NumberBuilder = numberBuilder;
             Initialize();
@@ -49,6 +49,8 @@ namespace EsotericDevZone.RuleBasedParser.Presets.Parsers
             ParseRules.RegisterRule("@T", "NUMBER", ParseResultBuilders.Self);
             ParseRules.RegisterRule("@T", "SYMBOL", ParseResultBuilders.Self);
             ParseRules.RegisterRule("@T", "( @E )", ParseResultBuilders.Self);
+            ParseRules.RegisterRule("@T", "+ @T", (int x) => x);
+            ParseRules.RegisterRule("@T", "- @T", (int x) => -x);
 
             RootRuleKey = "@E";
         }        
