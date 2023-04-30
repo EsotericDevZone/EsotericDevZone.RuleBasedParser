@@ -43,8 +43,7 @@ namespace EsotericDevZone.RuleBasedParser
                 
                 var result = LookFor(RootRuleKey, tokens, 0);
                 if(result!=null)
-                {                 
-                    
+                {                                     
                     if(result.Position!=0 || result.TokensCount!=tokens.Count)
                     {
                         throw new ParseException(tokens[0], "Insuficient tokens");
