@@ -10,12 +10,21 @@ namespace EsotericDevZone.RuleBasedParser
         public ParseResult Result { get; }
         public int Position { get; }
         public int TokensCount { get; }
+        public double Similarity { get; set; }
+        public ParseError Error { get; }
+
+        public ParseRecord(ParseError error)
+        {
+            Error = error;
+        }
+
         public ParseRecord(string ruleKey, ParseResult value, int position, int tokensCount)
         {
             RuleKey = ruleKey;
             Result = value;
             Position = position;
             TokensCount = tokensCount;
+            Error = null;
         }
 
         public override string ToString() => $"Record(Key='{RuleKey}', Position={Position}, TokensCount={TokensCount})";       

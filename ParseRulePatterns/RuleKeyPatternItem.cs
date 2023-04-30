@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace EsotericDevZone.RuleBasedParser.ParseRulePatterns
 {
@@ -10,21 +6,14 @@ namespace EsotericDevZone.RuleBasedParser.ParseRulePatterns
     {
         public string RuleKey { get; }
 
-        public IParseRulePatternItemMatch Match(Parser parser, List<Token> tokens, int position)
+        public IParseRulePatternItemMatch Match(Parser parser, List<Token> tokens, int position, int stack = 0)
         {
-            try
+            var rec = parser.LookFor(RuleKey, tokens, position, stack + 1);
+            if (rec.Error != null)
             {
-                var rec = parser.LookFor(RuleKey, tokens, position);
-                return rec;
+                return new ParseError(rec.Error, rec.Error.Similarity);
             }
-            catch(ParseException e)
-            {
-                throw new ParseException((ParseException)e);
-            }
-            catch (Exception e)
-            {
-                throw new ParseException(tokens[position], e.Message);
-            }
+            return rec;
         }
 
         public RuleKeyPatternItem(string ruleKey)

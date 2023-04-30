@@ -22,9 +22,9 @@ namespace EsotericDevZone.RuleBasedParser.Presets
         public static object GenericString(string input, char startDelimiter, char endDelimiter)
         {
             if (input.Length < 2)
-                throw new ParseException("Invalid string");
+                throw new AtomBuildException("Invalid string");
             if (!(input.StartsWith(startDelimiter.ToString()) && input.EndsWith(endDelimiter.ToString())))
-                throw new ParseException("Invalid string");
+                throw new AtomBuildException("Invalid string");
             return input.Substring(1, input.Length - 2).FromLiteral();
         }
 
@@ -34,7 +34,7 @@ namespace EsotericDevZone.RuleBasedParser.Presets
         public static object Symbol(string input)
         {
             if (!Regex.IsMatch(input, @"^[_A-Za-z][_A-Za-z0-9]*$"))
-                throw new ParseException("Invalid symbol");
+                throw new AtomBuildException("Invalid symbol");
             return input;
         }        
     }

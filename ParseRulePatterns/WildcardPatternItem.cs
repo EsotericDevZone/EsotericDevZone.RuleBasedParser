@@ -9,11 +9,11 @@ namespace EsotericDevZone.RuleBasedParser.ParseRulePatterns
     internal class WildcardPatternItem : IParseRulePatternItem
     {
         private string[] Values;        
-        public IParseRulePatternItemMatch Match(Parser parser, List<Token> tokens, int position)
+        public IParseRulePatternItemMatch Match(Parser parser, List<Token> tokens, int position, int stack = 0)
         {
             if (Values.Contains(tokens[position].Value))
-                return new WildcardMatch(tokens[position], position);
-            throw new ParseException(tokens[position], "Unexpected token");
+                return new WildcardMatch(tokens[position], position) { Similarity = 1 };
+            return new ParseError($"Unexpected token : {tokens[position]}", position);
         }
 
         public WildcardPatternItem(string[] values)

@@ -1,4 +1,5 @@
-﻿using EsotericDevZone.RuleBasedParser.ParseRulePatterns;
+﻿using EsotericDevZone.Core;
+using EsotericDevZone.RuleBasedParser.ParseRulePatterns;
 using EsotericDevZone.RuleBasedParser.Presets;
 using System;
 using System.Collections.Generic;
@@ -30,36 +31,33 @@ namespace EsotericDevZone.RuleBasedParser
 
         public object Parse(string input)
         {
-            ParseCache.Clear();
-            try
-            {
-                var tokens = input.SplitToTokens(TokensSplitOptions, CommentStyle);
-                tokens.ForEach(_ => Debug.WriteLine(_));
+            ParseCache.Clear();            
+            var tokens = input.SplitToTokens(TokensSplitOptions, CommentStyle);
+            tokens.ForEach(_ => Debug.WriteLine(_));
 
-                if(tokens.Count==0)
-                {
-                    throw new NoTokensProvidedException("No tokens provided");
-                }
-                
-                var result = LookFor(RootRuleKey, tokens, 0);
-                if(result!=null)
-                {                                     
-                    if(result.Position!=0 || result.TokensCount!=tokens.Count)
-                    {
-                        throw new ParseException(tokens[0], "Insuficient tokens");
-                    }
-                    return result.Result.Value;
-                }
-            }          
-            catch(ParseException ex)
+            if(tokens.Count==0)
             {
-                throw new ParseException(ex);
+                throw new NoTokensProvidedException("No tokens provided");
             }
-            throw new ParseException("Parse error: No result");
+
+            var result = LookFor(RootRuleKey, tokens, 0);
+
+            if (result == null)
+                throw new ParseException("Parse result was null");
+
+            if (result.Error != null)
+                throw new ParseException(tokens[result.Error.Position], result.Error.ToString());
+
+            if (result.Position != 0 || result.TokensCount != tokens.Count) 
+            {
+                throw new ParseException(tokens.Last(), "Insuficient tokens");
+            }
+            return result.Result.Value;                   
         }
 
-        private ParseRecord LookFor(ParseRule rule, List<Token> tokens, int pos)
+        private ParseRecord LookFor(ParseRule rule, List<Token> tokens, int pos, int stack = 0)
         {
+            var stackstr = Enumerable.Range(0, stack).Select(_ => "    ").JoinToString("");
             Debug.WriteLine($"{pos,5}. Looking for {rule}");
 
             var pattern = rule.ParsePattern;
@@ -68,10 +66,7 @@ namespace EsotericDevZone.RuleBasedParser
             List<Token> finalSelectorMatches = null;
             
             var records = new List<ParseRecord>();
-            var selectorsMatches = new List<Token>();
-            
-
-            Exception raisedException = null;
+            var selectorsMatches = new List<Token>();           
             
             int originalPos = pos;            
 
@@ -81,14 +76,23 @@ namespace EsotericDevZone.RuleBasedParser
             Debug.WriteLine($"Mandatory = {string.Join(" ",mandatoryPattern.ToList())}");
             Debug.WriteLine($"Optional = {string.Join(" ", optionalPattern.ToList())}");
 
-            void dealWithPatternItem(IParseRulePatternItem item)
+            List<ParseError> encounteredErrors = new List<ParseError>();
+
+            bool dealWithPatternItem(IParseRulePatternItem item)
             {
                 if (pos >= tokens.Count)
                 {
-                    throw new ParseException(tokens.Last(), "Insufficient tokens");
-                }
+                    encounteredErrors.Add(new ParseError("Unexpected end of input", tokens.Count));
+                    return false;                    
+                }                
 
-                var match = item.Match(this, tokens, pos);                
+                var match = item.Match(this, tokens, pos);
+
+                if (match is ParseError error) 
+                {
+                    encounteredErrors.Add(error);
+                    return false;
+                }
 
                 if (match is WildcardMatch wildcardMatch)
                 {
@@ -99,41 +103,62 @@ namespace EsotericDevZone.RuleBasedParser
                     records.Add(record);
                     AddToCache(record);
                 }
-                else if (match is IgnoreMatch)
+                else if (match is IgnoreMatch) { }
+                else
                 {
-                }
-                else throw new NotImplementedException("Invalid match");
-
+                    encounteredErrors.Add(new ParseError("Unknown match type", 0));
+                    return false;
+                }                
                 pos += match.TokensCount;
+                return true;
             }
 
-            try
-            {
-                foreach (var item in mandatoryPattern)
-                    dealWithPatternItem(item);
-            }
-            catch (ParseException e) { raisedException = e; }
+            int patCount = mandatoryPattern.Length;
+            int solCount = 0;
 
-            if (raisedException != null) throw raisedException;
+            foreach (var item in mandatoryPattern)
+                if (!dealWithPatternItem(item))
+                {
+                    Console.WriteLine("--0-----------------------------------");
+                    Console.WriteLine(encounteredErrors.JoinToString("\n").Indent(stackstr));                    
+                    var maxSim = encounteredErrors.Max(_ => _.Similarity);
+                    var error = encounteredErrors
+                        .Where(_ => _.Similarity == maxSim).First();
+                    error = new ParseError(error, Math.Max(error.Similarity, 1.0 * solCount / patCount));
+                    //Console.WriteLine(error);
+                    return new ParseRecord(error);
+                }
+                else solCount++;
+
+            encounteredErrors.Clear();
+
             finalRecords = records.ToList();
             finalSelectorMatches = selectorsMatches.ToList();
 
             int posBackup = pos;
             if (optionalPattern.Length>0 && pos < tokens.Count)
-            {                
-                while(raisedException==null)
+            {
+                ParseError pError = null;                
+                while (pError == null)
                 {
                     posBackup = pos;
-                    try
+                    patCount += optionalPattern.Length;
+                    foreach (var item in optionalPattern)
+                        if (!dealWithPatternItem(item))
+                        {
+                            Console.WriteLine("--R-----------------------------------");
+                            Console.WriteLine(encounteredErrors.JoinToString("\n").Indent(stackstr));
+                            var maxSim = encounteredErrors.Max(_ => _.Similarity);
+                            var error = encounteredErrors
+                                .Where(_ => _.Similarity == maxSim).First();
+                            pError = new ParseError(error, 1.0 * solCount / patCount);
+                            break;
+                        }
+                        else solCount++;
+                    if (pError == null)
                     {
-                        foreach (var item in optionalPattern)
-                            dealWithPatternItem(item);
                         finalRecords = records.ToList();
                         finalSelectorMatches = selectorsMatches.ToList();
-                    }
-                    catch (ParseException e) 
-                    { 
-                        raisedException = e;                        
                     }
                 }
                 pos = posBackup;
@@ -148,46 +173,40 @@ namespace EsotericDevZone.RuleBasedParser
             return _rec;            
         }
 
-        internal ParseRecord LookFor(string ruleKey, List<Token> tokens, int pos)
+        internal ParseRecord LookFor(string ruleKey, List<Token> tokens, int pos, int stack = 0)
         {
+            var stackstr = Enumerable.Range(0, stack).Select(_ => "    ").JoinToString("");
+
             ParseRecord fromCache;
             if ((fromCache = GetFromCache(ruleKey, pos)) != null)
                 return fromCache;
-            ParseException raisedException = null;            
+
+            var encounteredErrors = new List<ParseError>();
             
             foreach (var rule in ParseRules.GetRulesByKey(ruleKey)) 
-            {                
-                try
+            {
+                var rec = LookFor(rule, tokens, pos, stack + 1);
+                if (rec != null)
                 {
-                    var rec = LookFor(rule, tokens, pos);
-                    if (rec != null)
-                    {                        
-                        AddToCache(rec);
-
-                        //Debug.WriteLine($"Found: {rec.Result.Value}, {rec.Position}:{rec.TokensCount}");
+                    if (rec.Error != null)
+                    {
+                        encounteredErrors.Add(rec.Error);
+                        Console.WriteLine($"{stackstr}Recv: {rec.Error}");
+                    }
+                    else
+                    {
+                        AddToCache(rec);                        
                         return rec;
                     }
-                }
-                catch(ParseException e)
-                {
-                    raisedException = new ParseException((ParseException)e);
-                }
-                catch (NullReferenceException e)
-                {
-                    raisedException = new ParseException(tokens[pos], e.Message);
-                }
-                catch (Exception e)
-                {
-                    raisedException = new ParseException(tokens[pos], e.Message);                    
-                }                
+                }               
             }
-            
 
-            if(raisedException!=null)
-                throw new ParseException(raisedException);
-            //throw new ParseException("Parse failed");            
-           
-            return null;
+            Console.WriteLine($"{stackstr}Final - {encounteredErrors.Count}");
+            Console.WriteLine(encounteredErrors.JoinToString("\n").Indent(stackstr));
+
+            var maxSim = encounteredErrors.Max(_ => _.Similarity);
+            var error = encounteredErrors.Where(_ => _.Similarity == maxSim).First();
+            return new ParseRecord(error);
         }
 
 

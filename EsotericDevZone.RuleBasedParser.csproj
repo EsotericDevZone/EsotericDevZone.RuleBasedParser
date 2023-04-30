@@ -51,11 +51,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ParseError.cs" />
     <Compile Include="Presets\AtomBuilders.cs" />
     <Compile Include="IgnoreMatch.cs" />
     <Compile Include="NoTokensProvidedException.cs" />
     <Compile Include="ParseException.cs" />
     <Compile Include="CommentStyle.cs" />
+    <Compile Include="Presets\AtomBuildException.cs" />
     <Compile Include="Presets\CommentStyles.cs" />
     <Compile Include="Helpers\CommentsStyleHelper.cs" />
     <Compile Include="Helpers\TokenSplitHelper.cs" />

@@ -4,5 +4,6 @@
     {
         int Position { get; }
         int TokensCount { get; }
+        double Similarity { get; set; }
     }    
 }
