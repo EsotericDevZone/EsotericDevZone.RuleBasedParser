@@ -9,9 +9,9 @@ namespace EsotericDevZone.RuleBasedParser.Presets.Parsers
 {
     public class ArithmeticsParser<T> : Parser
     {
-        private Func<string, object> NumberBuilder;        
+        private Func<string, AtomResult> NumberBuilder;        
 
-        public ArithmeticsParser(Func<string, object> numberBuilder) : base()
+        public ArithmeticsParser(Func<string, AtomResult> numberBuilder) : base()
         {
             this.TokensSplitOptions = new TokensSplitOptions(
                 Lists.Empty<string>(),

@@ -1,26 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace EsotericDevZone.RuleBasedParser.ParseRulePatterns
 {
     internal class AtomPatternItem : IParseRulePatternItem
     {
         public string Name { get; }        
-        public IParseRulePatternItemMatch Match(Parser parser, List<Token> tokens, int position, int stack = 0)
-        {
-            try
+        public IParseRulePatternItemMatch Match(Parser parser, List<Token> tokens, int position)
+        {            
+            var atom = parser.GetAtomBuilder(Name)(tokens[position].Value);            
+            if (atom.Failed) 
             {
-                var resObj = parser.GetAtomBuilder(Name)(tokens[position].Value);
-                var result = new ParseResult(tokens[position], resObj);
-                return new ParseRecord(Name, result, position, 1) { Similarity = 1 };
-            }
-            catch(Exception e)
-            {
-                return new ParseError(e.Message, position);
+                return new ParseError(atom.ErrorMessage, position);
             }            
+            var result = new ParseResult(tokens[position], atom.Value);
+            return new ParseRecord(Name, result, position, 1);      
         }
 
         public AtomPatternItem(string name)

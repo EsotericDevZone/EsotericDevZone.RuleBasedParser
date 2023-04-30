@@ -9,13 +9,13 @@ namespace EsotericDevZone.RuleBasedParser
 
         public int TokensCount { get; } = 0;
 
-        public double Similarity { get; set; } = 0;
+        public double Relevance { get; set; } = 0;
 
         public ParseError(ParseError error, double similarity)
         {
             Message = error.Message;
             Position = error.Position;
-            Similarity = similarity;
+            Relevance = similarity;
         }
 
         public ParseError(string message, int position)
@@ -24,6 +24,6 @@ namespace EsotericDevZone.RuleBasedParser
             Position = position;
         }
 
-        public override string ToString() => $"ParseError: \"{Message}\" at token index {Position} [S={Similarity}]";
+        public override string ToString() => $"ParseError: \"{Message}\" at token index {Position} [S={Relevance}]";
     }
 }

@@ -6,9 +6,7 @@ namespace EsotericDevZone.RuleBasedParser
     {
         public Token Value { get; }
         public int Position { get; }
-        public int TokensCount { get; } = 1;
-
-        public double Similarity { get; set; }
+        public int TokensCount { get; } = 1;        
 
         public WildcardMatch(Token value, int position)
         {

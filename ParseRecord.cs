@@ -9,8 +9,7 @@ namespace EsotericDevZone.RuleBasedParser
         public string RuleKey { get; }
         public ParseResult Result { get; }
         public int Position { get; }
-        public int TokensCount { get; }
-        public double Similarity { get; set; }
+        public int TokensCount { get; }        
         public ParseError Error { get; }
 
         public ParseRecord(ParseError error)

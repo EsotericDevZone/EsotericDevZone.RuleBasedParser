@@ -6,12 +6,12 @@ namespace EsotericDevZone.RuleBasedParser.ParseRulePatterns
     {
         public string RuleKey { get; }
 
-        public IParseRulePatternItemMatch Match(Parser parser, List<Token> tokens, int position, int stack = 0)
+        public IParseRulePatternItemMatch Match(Parser parser, List<Token> tokens, int position)
         {
-            var rec = parser.LookFor(RuleKey, tokens, position, stack + 1);
+            var rec = parser.LookFor(RuleKey, tokens, position);
             if (rec.Error != null)
             {
-                return new ParseError(rec.Error, rec.Error.Similarity);
+                return new ParseError(rec.Error, rec.Error.Relevance);
             }
             return rec;
         }

@@ -8,12 +8,12 @@ namespace EsotericDevZone.RuleBasedParser.ParseRulePatterns
 {
     internal class WildcardPatternItem : IParseRulePatternItem
     {
-        private string[] Values;        
-        public IParseRulePatternItemMatch Match(Parser parser, List<Token> tokens, int position, int stack = 0)
+        private readonly string[] Values;        
+        public IParseRulePatternItemMatch Match(Parser parser, List<Token> tokens, int position)
         {
             if (Values.Contains(tokens[position].Value))
-                return new WildcardMatch(tokens[position], position) { Similarity = 1 };
-            return new ParseError($"Unexpected token : {tokens[position]}", position);
+                return new WildcardMatch(tokens[position], position);
+            return new ParseError($"Unexpected token : {tokens[position].Value}", position);
         }
 
         public WildcardPatternItem(string[] values)

@@ -5,37 +5,44 @@ namespace EsotericDevZone.RuleBasedParser.Presets
 {
     public static class AtomBuilders
     {
-        public static object Integer(string input) => int.Parse(input);
-        public static object Real(string input) => double.Parse(input);
-        public static object Number(string input)
+        public static AtomResult Integer(string input)
         {
-            try
-            {
-                return Real(input);
-            }
-            catch (Exception)
-            {
-                return Integer(input);
-            }
+            if (int.TryParse(input, out int value))
+                return AtomResult.Atom(value);
+            return AtomResult.Error($"Input is not an integer : '{input}'");            
+        }
+        public static AtomResult Real(string input)
+        {
+            if (double.TryParse(input, out double value)) 
+                return AtomResult.Atom(value);
+            return AtomResult.Error($"Input is not a real number : '{input}'");
+        }        
+        public static AtomResult Number(string input)
+        {
+            if (double.TryParse(input, out double value))
+                return AtomResult.Atom(value);
+            if (int.TryParse(input, out int ivalue))
+                return AtomResult.Atom(ivalue);
+            return AtomResult.Error($"Input is not a number : '{input}'");            
         }
 
-        public static object GenericString(string input, char startDelimiter, char endDelimiter)
+        public static AtomResult GenericString(string input, char startDelimiter, char endDelimiter)
         {
             if (input.Length < 2)
-                throw new AtomBuildException("Invalid string");
+                return AtomResult.Error("Invalid string");
             if (!(input.StartsWith(startDelimiter.ToString()) && input.EndsWith(endDelimiter.ToString())))
-                throw new AtomBuildException("Invalid string");
-            return input.Substring(1, input.Length - 2).FromLiteral();
+                return AtomResult.Error("Invalid string");
+            return AtomResult.Atom(input.Substring(1, input.Length - 2).FromLiteral());
         }
 
-        public static object DoubleQuotedString(string input) => GenericString(input, '"', '"');
-        public static object SingleQuotedString(string input) => GenericString(input, '\'', '\'');
+        public static AtomResult DoubleQuotedString(string input) => GenericString(input, '"', '"');
+        public static AtomResult SingleQuotedString(string input) => GenericString(input, '\'', '\'');
 
-        public static object Symbol(string input)
+        public static AtomResult Symbol(string input)
         {
             if (!Regex.IsMatch(input, @"^[_A-Za-z][_A-Za-z0-9]*$"))
-                throw new AtomBuildException("Invalid symbol");
-            return input;
+                return AtomResult.Error("Invalid symbol");
+            return AtomResult.Atom(input);
         }        
     }
 }

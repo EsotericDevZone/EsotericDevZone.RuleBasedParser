@@ -51,6 +51,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AtomResult.cs" />
     <Compile Include="ParseError.cs" />
     <Compile Include="Presets\AtomBuilders.cs" />
     <Compile Include="IgnoreMatch.cs" />
