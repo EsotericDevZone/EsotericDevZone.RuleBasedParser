@@ -21,7 +21,7 @@ The types of matchers are:
 
     An atom corresponds to a single token from the input interpreted in some specific way. Atom types are user defined. They are recommended to be named with capital letters for better distinction.
     
-    For example, `NUMBER` atom matcher identifier any numeric values such as `7`, `13`, `12.3`, while `STRING` may match values like `"this string"`.
+    For example, `NUMBER` atom matcher identifies any numeric values such as `7`, `13`, `12.3`, while `STRING` may match values like `"this string"`.
 - **Rule keys**
 
     A rule key matcher tells the parser that it should look for an entity which corresponds to that rule key.
@@ -67,7 +67,7 @@ The `TokensSplitOptions` contains two sets of rules:
 
 - **Atoms**
 
-    An atom (_in tokens terms_) is a regex that describes a single atom and isolates it from the adjacent context. For example, the atom rule (`\+`) isolates every _plus_ sign from the input `1+2+3`, leading to 5 tokens '1', `+`, `2`, `+`, `3`.
+    An atom (_in tokens terms_) is a regex that describes a single token and isolates it from the adjacent context. For example, the atom rule (`\+`) isolates every _plus_ sign from the input `1+2+3`, leading to 5 tokens `1`, `+`, `2`, `+`, `3`.
 
     **The atom rules are Regular Expressions, please be aware of the regex escaping rules when needed (A rule that isolates the `=` sign token must be written as `\=`)!**
 
@@ -108,7 +108,7 @@ parser.TokensSplitOptions = tokensSplitOptions;
 parser.CommentStyle = CommentStyles.NoCommentsStyle; // No comment :))
 ```
 
-We need to tell the parser how to evaluate numbers. For that, we need to define an parse atom:
+We need to tell the parser how to evaluate numbers. For that, we need to define a parse atom:
 
 ```C#
 parser.RegisterAtom("NUMBER", AtomBuilders.Integer);
@@ -118,7 +118,7 @@ Or, if you're feeling like you want to do it yourself:
 
 ```C#
 parser.RegisterAtom("NUMBER", (token) 
-    => int.TryParse(input, out int value) 
+    => int.TryParse(token, out int value) 
         ? AtomResult.Atom(value) 
         : AtomResult.Error("Input is not an integer")
 );                
@@ -139,7 +139,7 @@ From these examples, we can extract a couple of helpful ideas:
 1. A single number is a valid expression
 1. A series of additions/subtractions is a valid expression
 1. A series of multiplications/divisions is a valid expression
-1. In a combined operations input, multiplication and division comes before addition/subtraction
+1. In a combined operations input, multiplication and division come before addition/subtraction
 1. Anything between parenthesis must be solved first
 
 These hints point to a following rules system:
