@@ -25,7 +25,8 @@ namespace EsotericDevZone.RuleBasedParser.ParseRulePatterns
             {
                 return new RuleKeyPatternItem(item);
             }
-            if(parser.IsAtom(item))
+            item = item.Replace(@"\@", "@");
+            if (parser.IsAtom(item))
             {
                 return new AtomPatternItem(item);
             }
