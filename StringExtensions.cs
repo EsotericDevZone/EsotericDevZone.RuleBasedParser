@@ -11,67 +11,7 @@ using static EsotericDevZone.RuleBasedParser.Helpers.TokenSplitHelper;
 namespace EsotericDevZone.RuleBasedParser
 {
     internal static class StringExtensions
-    {
-        private static readonly Dictionary<char, string> CharsToEscape = new Dictionary<char, string>
-        {
-            { '\"', "\\\""},
-            { '\\', @"\\"},
-            { '\0', @"\0"},
-            { '\a', @"\a"},
-            { '\b', @"\b"},
-            { '\f', @"\f"},
-            { '\n', @"\n"},
-            { '\r', @"\r"},
-            { '\t', @"\t"},
-            { '\v', @"\v"},
-        };
-
-        /// <summary>
-        /// Converts a string value to its literal constant string form (e.g "my    string" => "\"my\tstring\"")
-        /// </summary>                                
-        public static string ToLiteral(this string input)
-        {            
-            StringBuilder literal = new StringBuilder(input.Length + 2);
-            literal.Append("\"");
-            foreach (var c in input)
-            {
-                if (CharsToEscape.ContainsKey(c))
-                    literal.Append(CharsToEscape[c]);
-                else if (c >= 0x20 && c <= 0x7e)
-                    literal.Append(c);
-                else 
-                    literal.Append($@"\u{(int)c:x4}");
-            }
-            literal.Append("\"");
-            return literal.ToString();
-        }
-
-        public static string FromLiteral(this string input)
-        {
-            var result = Regex.Replace(input, @"\\[\\""0abfnrtv]", m =>
-            {
-                switch (m.Value)
-                {
-                    case @"\\": return "\\";
-                    case @"""": return "\"";
-                    case @"\0": return "\0";
-                    case @"\a": return "\a";
-                    case @"\b": return "\b";
-                    case @"\f": return "\f";
-                    case @"\n": return "\n";
-                    case @"\r": return "\r";
-                    case @"\t": return "\t";
-                    case @"\v": return "\v";
-                    default: return m.Value;
-                }
-            });
-            return Regex.Replace(result, @"\\u[A-Fa-f0-9]{4,6}", m =>
-            {
-                int code = int.Parse(m.Value, System.Globalization.NumberStyles.HexNumber);
-                return char.ConvertFromUtf32(code).ToString();
-            });                
-        }
-
+    {        
         /// <summary>
         /// Replaces multiple adjacent whitespaces with a single space (' ') character.
         /// E.g. "my  unevenly\t spaced string".RemoveRedundantWhitespace() --> "my unevenly spaced string"

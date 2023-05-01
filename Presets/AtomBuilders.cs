@@ -1,4 +1,5 @@
-﻿using System;
+﻿using EsotericDevZone.Core;
+using System;
 using System.Text.RegularExpressions;
 
 namespace EsotericDevZone.RuleBasedParser.Presets
@@ -23,7 +24,7 @@ namespace EsotericDevZone.RuleBasedParser.Presets
                 return AtomResult.Atom(value);
             if (int.TryParse(input, out int ivalue))
                 return AtomResult.Atom(ivalue);
-            return AtomResult.Error($"Input is not a number : '{input}'");            
+            return AtomResult.Error($"Input is not a number : '{input}'"); 
         }
 
         public static AtomResult GenericString(string input, char startDelimiter, char endDelimiter)
@@ -32,7 +33,7 @@ namespace EsotericDevZone.RuleBasedParser.Presets
                 return AtomResult.Error("Invalid string");
             if (!(input.StartsWith(startDelimiter.ToString()) && input.EndsWith(endDelimiter.ToString())))
                 return AtomResult.Error("Invalid string");
-            return AtomResult.Atom(input.Substring(1, input.Length - 2).FromLiteral());
+            return AtomResult.Atom(input.FromLiteral());
         }
 
         public static AtomResult DoubleQuotedString(string input) => GenericString(input, '"', '"');

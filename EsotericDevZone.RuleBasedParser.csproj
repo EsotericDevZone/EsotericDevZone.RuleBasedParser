@@ -37,9 +37,6 @@
     </ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="EsotericDevZone.Core, Version=1.0.6.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\EsotericDevZone.Core.1.0.6\lib\net46\EsotericDevZone.Core.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
@@ -91,6 +88,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="esodev2.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\EsotericDevZone.Core\EsotericDevZone.Core.csproj">
+      <Project>{3897bd01-4139-4f16-b86c-ffb1d66bcba0}</Project>
+      <Name>EsotericDevZone.Core</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
